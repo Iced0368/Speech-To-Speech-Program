@@ -5,6 +5,8 @@ from queue import Queue
 import gtts
 from playsound import playsound
 from typing import Optional, Callable, Union
+import sounddevice as sd
+import soundfile as sf
 
 def execFunc(func, *args):
     return func(*args) if func is not None else None
@@ -142,7 +144,9 @@ class SpeakerThread(threading.Thread):
         except gtts.tts.gTTSError:
             print("Unsupported language!")
             return
-        playsound(filename)
+        data, fs = sf.read(filename, dtype='float32')  
+        sd.play(data, fs, device = self.device_index)
+        status = sd.wait()
         os.remove(filename)
 
 class SpeechToSpeech:

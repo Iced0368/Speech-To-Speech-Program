@@ -259,7 +259,6 @@ class SettingsWidget(QWidget):
 
         input_index = self.input_combobox.findData(p.get_default_input_device_info().get('index'))
         output_index = self.output_combobox.findData(p.get_default_output_device_info().get('index'))
-
         self.input_combobox.setCurrentIndex(input_index)
         self.output_combobox.setCurrentIndex(output_index)
         
