@@ -2,7 +2,7 @@ import os, threading, time, io
 import speech_recognition as sr
 import googletrans
 from queue import Queue
-from gtts import gTTS
+import gtts
 from playsound import playsound
 from typing import Optional, Callable, Union
 
@@ -55,6 +55,7 @@ class ListenerThread(threading.Thread):
                 pass
             return None
 
+
 class transText:
     origin: str
     translated: str
@@ -81,6 +82,7 @@ class RecognizeThread(threading.Thread):
             if audio == None:
                 self.speaker.put(None)
                 break
+
             text = self.recognize(audio)
             if text != None:
                 execFunc(self.recognizeEvent, text)
@@ -88,14 +90,16 @@ class RecognizeThread(threading.Thread):
                     self.speaker.put(text.translated)
 
     def recognize(self, audio):
+        text = ""
         if isinstance(audio, str):
-            return audio
-        listener = sr.Recognizer()
-        try:
-            text = listener.recognize_google(audio, language=self.input_lang)
-        except sr.UnknownValueError:
-            print("could not understand audio")
-            return transText("", "")
+            text = audio
+        else:
+            listener = sr.Recognizer()
+            try:
+                text = listener.recognize_google(audio, language=self.input_lang)
+            except sr.UnknownValueError:
+                print("could not understand audio")
+                return transText("", "")
         
         text = str(text)
         if self.input_lang == self.output_lang:
@@ -132,8 +136,12 @@ class SpeakerThread(threading.Thread):
 
     def speak(self, text: str):
         filename = "assets/output.mp3"
-        tts = gTTS(text=text, lang=self.lang, lang_check=False, slow=False)
-        tts.save(filename)
+        try:
+            tts = gtts.gTTS(text=text, lang=self.lang, lang_check=False, slow=False)
+            tts.save(filename)
+        except gtts.tts.gTTSError:
+            print("Unsupported language!")
+            return
         playsound(filename)
         os.remove(filename)
 
